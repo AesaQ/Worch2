@@ -3,20 +3,15 @@ package com.worch.model.entity;
 
 import com.worch.model.enums.ChoiceStatus;
 import com.worch.model.enums.converter.ChoiceStatusConverter;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.time.ZonedDateTime;
-import java.util.UUID;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 
 @AllArgsConstructor
@@ -29,12 +24,16 @@ public class Choice {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
-  @Column(updatable = false, nullable = false, name = "id")
+  @Column(updatable = false, nullable = false)
   private UUID id;
 
-  private UUID creatorId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "creator_id", nullable = false)
+  private User creator;
 
-  private UUID channelId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false)
+  private Channel channel;
 
   @Column(length = 300)
   private String title;
@@ -42,16 +41,20 @@ public class Choice {
   @Column(columnDefinition = "TEXT")
   private String description;
 
-//  private byte[] image;
+  @Column
+  private String imageLink;
 
-  @Column(name = "is_personal")
-  private boolean personal;
+  @Column
+  private Boolean personal;
 
+  @Column
   @Convert(converter = ChoiceStatusConverter.class)
   private ChoiceStatus status;
 
-  private ZonedDateTime deadline;
+  @Column
+  private OffsetDateTime deadline;
 
   @CreationTimestamp
-  private ZonedDateTime createdAt;
+  @Column(nullable = false)
+  private OffsetDateTime createdAt;
 }

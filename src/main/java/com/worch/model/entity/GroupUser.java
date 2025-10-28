@@ -11,10 +11,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "choice_option")
+@Table(name = "group_user")
 @Setter
 @Getter
-public class ChoiceOption {
+public class GroupUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -22,12 +22,10 @@ public class ChoiceOption {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "choice_id")
-    private Choice choice;
+    @JoinColumn(name = "group_id")
+    private Group group;
 
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false)
-    private Integer position;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

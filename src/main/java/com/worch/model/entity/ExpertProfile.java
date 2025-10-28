@@ -1,10 +1,9 @@
 package com.worch.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,18 +13,25 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "expert_profile")
 public class ExpertProfile {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(unique = true, nullable = false)
     private UUID id;
 
-    @Column(name = "user_id")
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(name = "is_incognito")
+    @Column
     private Boolean isIncognito;
 
+    @Column
     private Integer price;
 
+    @Column
     private Float rating;
 }

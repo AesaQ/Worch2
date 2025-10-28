@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -17,16 +17,20 @@ public class Group {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "owner_id")
-    private UUID ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 
-    @Column(name = "parent_id")
-    private UUID parentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Group parent;
 
-    @Column(name = "created_at")
-    private Instant createdAt;
+    @Column(nullable = false)
+    private OffsetDateTime createdAt;
 }

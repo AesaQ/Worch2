@@ -17,18 +17,21 @@ public class Vote {
 
     @Id
     @GeneratedValue(generator = "UUID")
-    @Column(name = "id")
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "choice_id")
-    private UUID choiceId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "choice_id")
+    private Choice choice;
 
-    @Column(name = "option_id")
-    private UUID optionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "option_id")
+    private ChoiceOption option;
 
-    @Column(name = "user_id")
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(nullable = false, name = "user_id")
+    private User user;
 
-    @Column(name = "voted_at")
+    @Column(nullable = false)
     private OffsetDateTime votedAt;
 }

@@ -1,10 +1,8 @@
 package com.worch.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.worch.model.enums.Language;
+import jakarta.persistence.*;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -27,24 +25,31 @@ public class User {
     @Column(columnDefinition = "UUID")
     private UUID id;
 
-    @Column()
+    @Column
     private String phone;
 
     @Column(unique = true, nullable = false)
     private String login;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "password")
     private String password;
 
     @Column
     private String email;
 
-    @Column()
+    @Column
     private String firstName;
 
-    @Column()
+    @Column
     private String lastName;
 
-    @Column()
+    @Column
+    private OffsetDateTime birthday;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Language language;
+
+    @Column(nullable = false)
     private OffsetDateTime createdAt;
 }
