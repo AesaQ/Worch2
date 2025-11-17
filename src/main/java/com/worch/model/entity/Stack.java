@@ -24,22 +24,20 @@ public class Stack {
     @Column(columnDefinition = "UUID", nullable = false, updatable = false)
     private UUID id;
 
-    @Column
+    @Column(length = 255)
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    @Column
     private Boolean isQuiz;
 
-    @Column
     private Boolean published;
 
-    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column(nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime createdAt;
 }

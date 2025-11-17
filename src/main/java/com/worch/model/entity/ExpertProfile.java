@@ -22,16 +22,13 @@ public class ExpertProfile {
     @Column(unique = true, nullable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column
     private Boolean isIncognito;
 
-    @Column
     private Integer price;
 
-    @Column
     private Float rating;
 }

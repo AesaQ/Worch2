@@ -21,15 +21,14 @@ public class StackItem {
     @Column(unique = true, nullable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "stack_id")
     private Stack stack;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "choice_id")
     private Choice choice;
 
-    @Column
     private Integer position;
 
 }

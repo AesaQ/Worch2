@@ -36,4 +36,8 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("Текущий пользователь не найден: " + currentLogin))
                 .getId();
     }
+
+    public User getReferenceById(UUID userId) {
+        return userRepository.getReferenceById(userId);
+    }
 }

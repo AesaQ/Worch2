@@ -10,7 +10,7 @@ public class ExpertProfileMapper {
     public ExpertProfileResponse toDto(ExpertProfile expertProfile) {
         return new ExpertProfileResponse(
                 expertProfile.getId(),
-                expertProfile.getUserId(),
+                expertProfile.getUser().getId(),
                 expertProfile.getIsIncognito(),
                 expertProfile.getPrice(),
                 expertProfile.getRating()

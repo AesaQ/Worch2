@@ -25,7 +25,6 @@ public class User {
     @Column(columnDefinition = "UUID")
     private UUID id;
 
-    @Column
     private String phone;
 
     @Column(unique = true, nullable = false)
@@ -34,20 +33,15 @@ public class User {
     @Column(nullable = false, name = "password")
     private String password;
 
-    @Column
     private String email;
 
-    @Column
     private String firstName;
 
-    @Column
     private String lastName;
 
-    @Column
     private OffsetDateTime birthday;
 
     @Enumerated(EnumType.STRING)
-    @Column
     private Language language;
 
     @Column(nullable = false)

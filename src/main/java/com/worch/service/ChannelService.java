@@ -63,5 +63,8 @@ public class ChannelService {
 
         return channelRepository.save(channel);
     }
-}
 
+    public Channel getReferenceById(UUID id) {
+        return channelRepository.getReferenceById(id);
+    }
+}

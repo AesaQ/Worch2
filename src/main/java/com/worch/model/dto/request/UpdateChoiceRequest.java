@@ -3,7 +3,8 @@ package com.worch.model.dto.request;
 import com.worch.model.enums.ChoiceStatus;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.ZonedDateTime;
+
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record UpdateChoiceRequest(
@@ -14,7 +15,7 @@ public record UpdateChoiceRequest(
     //byte[] image,
     boolean isPersonal,
     @NotNull ChoiceStatus status,
-    ZonedDateTime deadline
+    OffsetDateTime deadline
 ) {
 
 }

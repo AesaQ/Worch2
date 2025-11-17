@@ -41,7 +41,7 @@ public class Channel {
     @Column(nullable = false)
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
@@ -55,7 +55,6 @@ public class Channel {
     private Boolean ageRestricted;
 
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
-    @Column
     private Set<ChannelUser> members;
 
     @CreationTimestamp

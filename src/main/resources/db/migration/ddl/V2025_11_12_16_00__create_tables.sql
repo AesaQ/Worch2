@@ -1,4 +1,4 @@
-CREATE TABLE channel
+CREATE TABLE IF NOT EXISTS channel
 (
     id             UUID                        NOT NULL,
     name           VARCHAR(255)                NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE channel
     CONSTRAINT pk_channel PRIMARY KEY (id)
 );
 
-CREATE TABLE channel_user
+CREATE TABLE IF NOT EXISTS channel_user
 (
     id         UUID NOT NULL,
     channel_id UUID NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE channel_user
     CONSTRAINT pk_channel_user PRIMARY KEY (id)
 );
 
-CREATE TABLE choice
+CREATE TABLE IF NOT EXISTS choice
 (
     id          UUID                        NOT NULL,
     creator_id  UUID                        NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE choice
     CONSTRAINT pk_choice PRIMARY KEY (id)
 );
 
-CREATE TABLE choice_option
+CREATE TABLE IF NOT EXISTS choice_option
 (
     id        UUID         NOT NULL,
     choice_id UUID         NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE choice_option
     CONSTRAINT pk_choice_option PRIMARY KEY (id)
 );
 
-CREATE TABLE expert_application
+CREATE TABLE IF NOT EXISTS expert_application
 (
     id           UUID                        NOT NULL,
     user_id      UUID                        NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE expert_application
     CONSTRAINT pk_expert_application PRIMARY KEY (id)
 );
 
-CREATE TABLE expert_profile
+CREATE TABLE IF NOT EXISTS expert_profile
 (
     id           UUID NOT NULL,
     user_id      UUID NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE expert_profile
     CONSTRAINT pk_expert_profile PRIMARY KEY (id)
 );
 
-CREATE TABLE "group"
+CREATE TABLE IF NOT EXISTS "group"
 (
     id         UUID                        NOT NULL,
     name       VARCHAR(255)                NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE "group"
     CONSTRAINT pk_group PRIMARY KEY (id)
 );
 
-CREATE TABLE group_user
+CREATE TABLE IF NOT EXISTS group_user
 (
     id       UUID NOT NULL,
     group_id UUID,
@@ -83,7 +83,7 @@ CREATE TABLE group_user
     CONSTRAINT pk_group_user PRIMARY KEY (id)
 );
 
-CREATE TABLE payment
+CREATE TABLE IF NOT EXISTS payment
 (
     id           UUID           NOT NULL,
     amount       DECIMAL(19, 2) NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE payment
     CONSTRAINT pk_payment PRIMARY KEY (id)
 );
 
-CREATE TABLE role
+CREATE TABLE IF NOT EXISTS role
 (
     id   UUID         NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -107,7 +107,7 @@ CREATE TABLE role
     CONSTRAINT pk_role PRIMARY KEY (id)
 );
 
-CREATE TABLE stack
+CREATE TABLE IF NOT EXISTS stack
 (
     id          UUID NOT NULL,
     title       VARCHAR(255),
@@ -119,7 +119,7 @@ CREATE TABLE stack
     CONSTRAINT pk_stack PRIMARY KEY (id)
 );
 
-CREATE TABLE stack_item
+CREATE TABLE IF NOT EXISTS stack_item
 (
     id        UUID NOT NULL,
     stack_id  UUID,
@@ -128,7 +128,7 @@ CREATE TABLE stack_item
     CONSTRAINT pk_stack_item PRIMARY KEY (id)
 );
 
-CREATE TABLE "user"
+CREATE TABLE IF NOT EXISTS "user"
 (
     id         UUID                        NOT NULL,
     phone      VARCHAR(255),
@@ -143,7 +143,7 @@ CREATE TABLE "user"
     CONSTRAINT pk_user PRIMARY KEY (id)
 );
 
-CREATE TABLE vote
+CREATE TABLE IF NOT EXISTS vote
 (
     id        UUID                        NOT NULL,
     choice_id UUID                        NOT NULL,
@@ -151,6 +151,15 @@ CREATE TABLE vote
     user_id   UUID                        NOT NULL,
     voted_at  TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     CONSTRAINT pk_vote PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS session
+(
+    id              UUID PRIMARY KEY,
+    jwt             TEXT,
+    user_id         UUID,
+    create_datetime TIMESTAMP WITH TIME ZONE,
+    end_datetime    TIMESTAMP WITH TIME ZONE
 );
 
 ALTER TABLE role

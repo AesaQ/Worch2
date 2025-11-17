@@ -27,11 +27,11 @@ public class Choice {
   @Column(updatable = false, nullable = false)
   private UUID id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne
   @JoinColumn(name = "creator_id", nullable = false)
   private User creator;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne
   @JoinColumn(name = "channel_id", nullable = false)
   private Channel channel;
 
@@ -41,17 +41,13 @@ public class Choice {
   @Column(columnDefinition = "TEXT")
   private String description;
 
-  @Column
   private String imageLink;
 
-  @Column
   private Boolean personal;
 
-  @Column
   @Convert(converter = ChoiceStatusConverter.class)
   private ChoiceStatus status;
 
-  @Column
   private OffsetDateTime deadline;
 
   @CreationTimestamp

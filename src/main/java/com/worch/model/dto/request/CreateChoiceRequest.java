@@ -4,7 +4,8 @@ import com.worch.model.enums.ChoiceStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.ZonedDateTime;
+
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record CreateChoiceRequest(
@@ -16,7 +17,7 @@ public record CreateChoiceRequest(
     boolean isPersonal,
 
     @NotNull ChoiceStatus status,
-    @NotNull ZonedDateTime deadline
+    @NotNull OffsetDateTime deadline
 ) {
 
 }

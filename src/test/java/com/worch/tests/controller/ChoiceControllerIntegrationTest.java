@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.worch.model.dto.request.CreateChoiceRequest;
 import com.worch.model.dto.request.UpdateChoiceRequest;
 import com.worch.model.dto.request.VoteRequest;
+import com.worch.model.entity.Channel;
 import com.worch.model.entity.Choice;
-import com.worch.model.entity.ChoiceOption;
 import com.worch.model.entity.User;
 import com.worch.model.enums.ChoiceStatus;
 import com.worch.repository.ChoiceRepository;
@@ -17,7 +17,7 @@ import com.worch.repository.VoteRepository;
 
 import com.worch.tests.common.AbstractIntegrationTest;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import org.junit.jupiter.api.*;
@@ -64,11 +64,11 @@ public class ChoiceControllerIntegrationTest extends AbstractIntegrationTest {
         choice.setId(UUID.randomUUID());
         choice.setTitle("Initial title");
         choice.setDescription("Initial description");
-        choice.setCreatorId(testUserId);
-        choice.setChannelId(UUID.randomUUID());
+        choice.setCreator(testUser);
+        choice.setChannel(new Channel());
         choice.setPersonal(false);
         choice.setStatus(ChoiceStatus.ACTIVE);
-        choice.setDeadline(ZonedDateTime.now().plusDays(5));
+        choice.setDeadline(OffsetDateTime.now().plusDays(5));
         choice = choiceRepository.save(choice);
         choiceId = choice.getId();
 
@@ -88,7 +88,7 @@ public class ChoiceControllerIntegrationTest extends AbstractIntegrationTest {
                     "Test desc",
                     true,
                     ChoiceStatus.ACTIVE,
-                    ZonedDateTime.now().plusDays(1)
+                    OffsetDateTime.now().plusDays(1)
             );
 
             mockMvc.perform(post("/api/v1/choices")
@@ -118,7 +118,7 @@ public class ChoiceControllerIntegrationTest extends AbstractIntegrationTest {
                     "Updated desc",
                     true,
                     ChoiceStatus.HIDDEN,
-                    ZonedDateTime.now().plusDays(10)
+                    OffsetDateTime.now().plusDays(10)
             );
 
             mockMvc.perform(put("/api/v1/choices/{id}", choiceId)

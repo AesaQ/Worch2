@@ -2,7 +2,7 @@ package com.worch.model.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record ChoiceResponseDto(
@@ -31,8 +31,8 @@ public record ChoiceResponseDto(
         String status,
 
         @Schema(description = "Дедлайн выбора", required = true)
-        ZonedDateTime deadline,
+        OffsetDateTime deadline,
 
         @Schema(description = "Дата создания выбора", required = true)
-        ZonedDateTime createdAt
+        OffsetDateTime createdAt
 ) {}

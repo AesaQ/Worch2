@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.worch.model.entity.Stack;
+import com.worch.model.entity.User;
 import com.worch.repository.StackRepository;
 import com.worch.tests.common.AbstractIntegrationTest;
 import java.time.OffsetDateTime;
@@ -41,7 +42,7 @@ public class StackControllerIntegrationTest extends AbstractIntegrationTest {
       stack.setId(UUID.randomUUID());
       stack.setTitle("Stack " + i);
       stack.setDescription("Description " + i);
-      stack.setCreatorId(UUID.randomUUID());
+      stack.setOwner(User.builder().id(UUID.randomUUID()).build());
       stack.setIsQuiz(false);
       stack.setPublished(true);
       stack.setCreatedAt(OffsetDateTime.now());

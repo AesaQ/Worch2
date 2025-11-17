@@ -219,6 +219,7 @@
                     <url>jdbc:postgresql://localhost:5432/worch_db</url>
                     <user>test</user>
                     <password>test</password>
+                    <cleanDisabled>false</cleanDisabled>
                 </configuration>
             </plugin>
         </plugins>

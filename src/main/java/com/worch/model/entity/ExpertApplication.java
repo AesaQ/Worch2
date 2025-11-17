@@ -20,11 +20,10 @@ public class ExpertApplication {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
-    @Column
     private String motivation;
 
     @Enumerated(EnumType.STRING)

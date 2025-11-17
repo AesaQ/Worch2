@@ -9,7 +9,7 @@ public class ChoiceOptionMapper {
     public ChoiceOptionStatsDto toStatsDto(ChoiceOption option, long votes, boolean isMyOption) {
         return new ChoiceOptionStatsDto(
                 option.getId(),
-                option.getText(),
+                option.getName(),
                 option.getPosition(),
                 votes,
                 isMyOption

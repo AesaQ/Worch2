@@ -11,6 +11,8 @@ import com.worch.model.dto.request.CreateChoiceRequest;
 import com.worch.model.dto.request.UpdateChoiceRequest;
 import com.worch.model.dto.request.VoteRequest;
 import com.worch.model.entity.Choice;
+import com.worch.model.entity.ChoiceOption;
+import com.worch.model.entity.User;
 import com.worch.model.entity.Vote;
 import com.worch.model.enums.ChoiceStatus;
 import com.worch.repository.ChoiceRepository;
@@ -114,7 +116,7 @@ class ChoiceServiceTest {
                     "desc",
                     true,
                     ChoiceStatus.ACTIVE,
-                    ZonedDateTime.now().plusDays(1)
+                    OffsetDateTime.now().plusDays(1)
             );
 
             Choice mappedChoice = new Choice();
@@ -142,7 +144,7 @@ class ChoiceServiceTest {
                     "updated desc",
                     true,
                     ChoiceStatus.HIDDEN,
-                    ZonedDateTime.now().plusDays(2)
+                    OffsetDateTime.now().plusDays(2)
             );
 
             Choice existing = new Choice();
@@ -208,6 +210,9 @@ class ChoiceServiceTest {
         private UUID optionId;
         private UUID userId;
         private VoteRequest voteRequest;
+        private Choice choice;
+        private ChoiceOption option;
+        private User user;
 
         @BeforeEach
         void setUp() {
@@ -215,6 +220,15 @@ class ChoiceServiceTest {
             optionId = UUID.randomUUID();
             userId = UUID.randomUUID();
             voteRequest = new VoteRequest(choiceId, optionId);
+            choice = new Choice(choiceId,
+                    null, null, null,
+                    null, null, null,
+                    null, null, null);
+            option = new ChoiceOption(optionId, choice, null, null);
+            user = new User(userId,
+                    null, null, null,
+                    null, null, null,
+                    null, null, null);
         }
 
         @Test
@@ -226,9 +240,9 @@ class ChoiceServiceTest {
 
             Vote savedVote = Vote.builder()
                     .id(UUID.randomUUID())
-                    .choiceId(choiceId)
-                    .optionId(optionId)
-                    .userId(userId)
+                    .choice(choice)
+                    .option(option)
+                    .user(user)
                     .votedAt(OffsetDateTime.now())
                     .build();
 
@@ -237,9 +251,9 @@ class ChoiceServiceTest {
             Vote result = choiceService.voteForChoice(choiceId, voteRequest);
 
             assertThat(result).isNotNull();
-            assertThat(result.getChoiceId()).isEqualTo(choiceId);
-            assertThat(result.getOptionId()).isEqualTo(optionId);
-            assertThat(result.getUserId()).isEqualTo(userId);
+            assertThat(result.getChoice().getId()).isEqualTo(choiceId);
+            assertThat(result.getOption().getId()).isEqualTo(optionId);
+            assertThat(result.getUser().getId()).isEqualTo(userId);
             assertThat(result.getVotedAt()).isNotNull();
 
             verify(userService).getCurrentUserId();
@@ -293,9 +307,9 @@ class ChoiceServiceTest {
                 Vote vote = invocation.getArgument(0);
                 return Vote.builder()
                         .id(UUID.randomUUID())
-                        .choiceId(vote.getChoiceId())
-                        .optionId(vote.getOptionId())
-                        .userId(vote.getUserId())
+                        .choice(vote.getChoice())
+                        .option(vote.getOption())
+                        .user(vote.getUser())
                         .votedAt(vote.getVotedAt())
                         .build();
             });
@@ -303,9 +317,9 @@ class ChoiceServiceTest {
             Vote result = choiceService.voteForChoice(choiceId, voteRequest);
 
             verify(voteRepository).save(argThat(vote ->
-                    vote.getChoiceId().equals(choiceId) &&
-                            vote.getOptionId().equals(optionId) &&
-                            vote.getUserId().equals(userId) &&
+                    vote.getChoice().getId().equals(choiceId) &&
+                            vote.getOption().getId().equals(optionId) &&
+                            vote.getUser().getId().equals(userId) &&
                             vote.getVotedAt() != null &&
                             vote.getVotedAt().isAfter(beforeVote)
             ));

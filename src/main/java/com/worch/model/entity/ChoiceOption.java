@@ -21,7 +21,7 @@ public class ChoiceOption {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(nullable = false, name = "choice_id")
     private Choice choice;
 

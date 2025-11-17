@@ -42,7 +42,7 @@ public class GroupService {
     }
 
     private GroupDTO toGroupDto(Group group, Map<UUID, User> ownersMap) {
-        User owner = ownersMap.get(group.getOwnerId());
+        User owner = ownersMap.get(group.getOwner().getId());
 
         if (owner == null) {
             throw new IllegalStateException("Владелец группы не найден: " + group.getId());

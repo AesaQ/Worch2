@@ -7,14 +7,12 @@ import com.worch.model.dto.request.CreateChoiceRequest;
 import com.worch.model.dto.request.UpdateChoiceRequest;
 import com.worch.model.dto.request.VoteRequest;
 import com.worch.model.entity.Choice;
-import com.worch.model.entity.User;
 import com.worch.model.enums.ChoiceStatus;
 import com.worch.model.specification.ChoiceSpecifications;
 import com.worch.repository.ChoiceRepository;
 import com.worch.repository.ChoiceOptionRepository;
 
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +42,7 @@ public class ChoiceService {
     private final ChoiceMapper choiceMapper;
     private final ChoiceOptionRepository choiceOptionRepository;
     private final UserService userService;
+    private final ChannelService channelService;
     private final VoteRepository voteRepository;
 
     public Choice getChoice(UUID id) {
@@ -75,8 +74,10 @@ public class ChoiceService {
                 .orElseThrow(() -> new ChoiceNotFoundException("Choice not found: " + id));
 
         existing.setTitle(request.title());
-        existing.setCreatorId(request.creatorId());
-        existing.setChannelId(request.channelId());
+        existing.setCreator(
+                userService.getReferenceById(request.creatorId()));
+        existing.setChannel(
+                channelService.getReferenceById(request.channelId()));
         existing.setDescription(request.description());
         existing.setPersonal(request.isPersonal());
         existing.setStatus(ChoiceStatus.valueOf(String.valueOf(request.status())));
@@ -108,9 +109,9 @@ public class ChoiceService {
         }
 
         Vote vote = Vote.builder()
-                .choiceId(choiceId)
-                .optionId(voteRequest.option())
-                .userId(userId) // автоматически
+                .choice(getReferenceById(choiceId))
+                .option(choiceOptionRepository.getReferenceById(voteRequest.option()))
+                .user(userService.getReferenceById(userId)) // автоматически
                 .votedAt(OffsetDateTime.now()) // автоматически
                 .build();
 
@@ -120,5 +121,9 @@ public class ChoiceService {
 
         return savedVote;
 
+    }
+
+    public Choice getReferenceById(UUID id) {
+        return choiceRepository.getReferenceById(id);
     }
 }

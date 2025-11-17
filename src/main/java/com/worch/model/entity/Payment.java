@@ -52,6 +52,7 @@ public class Payment {
     private PaymentMetadata metadata;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private OffsetDateTime createdAt;
 
     @UpdateTimestamp
