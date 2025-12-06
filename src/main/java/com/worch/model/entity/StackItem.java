@@ -17,14 +17,17 @@ import java.util.UUID;
 public class StackItem {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(unique = true, nullable = false)
     private UUID id;
 
-    @Column(name = "stack_id")
-    private UUID stackId;
+    @ManyToOne
+    @JoinColumn(name = "stack_id")
+    private Stack stack;
 
-    @Column(name = "choice_id")
-    private UUID choiceId;
+    @ManyToOne
+    @JoinColumn(name = "choice_id")
+    private Choice choice;
 
     private Integer position;
 

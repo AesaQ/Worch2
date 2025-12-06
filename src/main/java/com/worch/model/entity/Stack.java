@@ -1,10 +1,9 @@
 package com.worch.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,13 +12,16 @@ import java.util.UUID;
 
 @Slf4j
 @Entity
-@Table(name = "stack")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "stack")
 public class Stack {
 
     @Id
-    @Column(columnDefinition = "UUID")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "UUID", nullable = false, updatable = false)
     private UUID id;
 
     @Column(length = 255)
@@ -28,15 +30,14 @@ public class Stack {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "creator_id", columnDefinition = "UUID")
-    private UUID creatorId;
+    @ManyToOne
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 
-    @Column(name = "is_quiz")
     private Boolean isQuiz;
 
-    @Column
     private Boolean published;
 
-    @Column(name = "created_at", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    @Column(nullable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime createdAt;
 }

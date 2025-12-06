@@ -5,30 +5,29 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 
-@Slf4j
-@Entity
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "expert_profile")
-public class ExpertProfile {
+@Entity
+@Table(name = "choice_option")
+@Setter
+@Getter
+public class ChoiceOption {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(unique = true, nullable = false)
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(nullable = false, name = "choice_id")
+    private Choice choice;
 
-    private Boolean isIncognito;
+    @Column(nullable = false)
+    private String name;
 
-    private Integer price;
-
-    private Float rating;
+    @Column(nullable = false)
+    private Integer position;
 }
