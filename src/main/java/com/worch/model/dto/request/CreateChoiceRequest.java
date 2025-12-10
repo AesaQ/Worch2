@@ -9,14 +9,24 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record CreateChoiceRequest(
-    @NotNull UUID creatorId,
-    @NotNull UUID channelId,
-    @NotBlank @Size(max = 300) String title,
+    @NotNull(message = "Поле 'creatorId' не должно быть null")
+    UUID creatorId,
+
+    @NotNull(message = "Поле 'channelId' не должно быть null")
+    UUID channelId,
+
+    @NotBlank(message = "Поле 'channelId' обязательно для заполнения") @Size(max = 300)
+    String title,
+
     String description,
+
     boolean isPersonal,
 
-    @NotNull ChoiceStatus status,
-    @NotNull OffsetDateTime deadline
+    @NotNull(message = "Поле 'status' не должно быть null")
+    ChoiceStatus status,
+
+    @NotNull(message = "Поле 'deadline' не должно быть null")
+    OffsetDateTime deadline
 ) {
 
 }
