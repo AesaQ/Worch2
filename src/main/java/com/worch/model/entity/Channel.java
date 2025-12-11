@@ -31,21 +31,24 @@ import java.util.UUID;
 public class Channel {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(updatable = false, nullable = false, name = "id")
     private UUID id;
 
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
+    @ManyToOne
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    @Column
+    @Column(nullable = false)
     private Boolean isPrivate;
 
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
@@ -55,9 +58,11 @@ public class Channel {
     private Set<ChannelUser> members;
 
     @CreationTimestamp
+    @Column(nullable = false)
     private OffsetDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(nullable = false)
     private OffsetDateTime updatedAt;
 }
 

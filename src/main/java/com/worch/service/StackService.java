@@ -35,8 +35,8 @@ public class StackService {
     var stack = getStackOrThrow(stackId);
 
     var stackItem = new StackItem();
-    stackItem.setStackId(stack.getId());
-    stackItem.setChoiceId(choice.getId());
+    stackItem.setStack(stack);
+    stackItem.setChoice(choice);
     stackItem.setPosition(null);
 
     stackItemRepository.save(stackItem);

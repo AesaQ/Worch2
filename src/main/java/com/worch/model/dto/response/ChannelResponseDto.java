@@ -1,6 +1,6 @@
 package com.worch.model.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record ChannelResponseDto(
@@ -11,6 +11,6 @@ public record ChannelResponseDto(
         String password ,
         boolean ageRestricted ,
         UUID ownerId ,
-        LocalDateTime createdAt
+        OffsetDateTime createdAt
 ) {
 }

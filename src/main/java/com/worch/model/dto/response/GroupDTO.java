@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -24,5 +24,5 @@ public class GroupDTO {
     private GroupOwnerDto owner;
 
     @Schema(description = "Дата и время создания группы", required = true)
-    private Instant createdAt;
+    private OffsetDateTime createdAt;
 }
