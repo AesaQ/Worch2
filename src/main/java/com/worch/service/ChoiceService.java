@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -15,13 +16,10 @@ public class ChoiceService {
     private final ChoiceRepository choiceRepository;
 
     @Transactional(readOnly = true)
-    public List<Choice> getAllChoices() {
+    public List<Choice> getChoices(Optional<UUID> creatorId) {
+        if (creatorId.isPresent()) {
+            return choiceRepository.getAllByCreatorId(creatorId.get());
+        }
         return choiceRepository.findAll();
     }
-
-    @Transactional(readOnly = true)
-    public List<Choice> getAllChoicesByCreatorId(UUID creatorId) {
-        return choiceRepository.getAllByCreatorId(creatorId);
-    }
-
 }

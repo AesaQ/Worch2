@@ -24,16 +24,10 @@ public class ChoiceController {
     private final ChoiceService choiceService;
     private final ChoiceMapper choiceMapper;
 
-    @GetMapping("/getAll")
+    @GetMapping("/choices")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<ChoiceResponseDto>> getAllChoices(@RequestParam(required = false) Optional<UUID> creatorId) {
-        List<Choice> choices;
-        
-        if (creatorId.isPresent()) {
-            choices = choiceService.getAllChoicesByCreatorId(creatorId.get());
-        } else {
-            choices = choiceService.getAllChoices();
-        }
+    public ResponseEntity<List<ChoiceResponseDto>> getChoices(@RequestParam(required = false) Optional<UUID> creatorId) {
+        List<Choice> choices = choiceService.getChoices(creatorId);
 
         List<ChoiceResponseDto> responseDtos = choices.stream().map(choiceMapper::toDto).toList();
         return new ResponseEntity<>(responseDtos, HttpStatus.OK);
