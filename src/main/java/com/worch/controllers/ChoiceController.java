@@ -18,13 +18,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/choice")
+@RequestMapping("/api/v1/choices")
 @RequiredArgsConstructor
 public class ChoiceController {
     private final ChoiceService choiceService;
     private final ChoiceMapper choiceMapper;
 
-    @GetMapping("/choices")
+    @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ChoiceResponseDto>> getChoices(@RequestParam(required = false) Optional<UUID> creatorId) {
         List<Choice> choices = choiceService.getChoices(creatorId);
