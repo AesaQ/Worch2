@@ -17,7 +17,7 @@ public class ExpertProfileController {
     private final ExpertProfileService expertProfileService;
 
     @GetMapping
-    public ResponseEntity<List<ExpertProfileDto>> findAll() {
+    public ResponseEntity<List<ExpertProfileDto>> getExpertProfiles() {
         return ResponseEntity.ok(expertProfileService.getAllExpertProfiles());
     }
 }

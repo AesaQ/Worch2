@@ -8,7 +8,9 @@ public record ExpertProfileDto(
         @Schema(description = "Уникальный идентификатор профиля эксперта", required = true)
         UUID id,
         @Schema(description = "Идентификатор пользователя", required = true)
-        UserShortInfo user,
+        UUID userId,
+        @Schema(description = "Имя пользователя", required = true)
+        String username,
         @Schema(description = "Является ли профиль инкогнито?", required = true)
         Boolean isIncognito,
         @Schema(description = "Цена", required = true)
