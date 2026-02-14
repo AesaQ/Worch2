@@ -4,10 +4,7 @@ package com.worch.model.entity;
 import com.worch.model.enums.ChoiceStatus;
 import com.worch.model.enums.converter.ChoiceStatusConverter;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
@@ -20,6 +17,7 @@ import java.util.UUID;
 @Table(name = "choice")
 @Getter
 @Setter
+@EqualsAndHashCode
 public class Choice {
 
   @Id
