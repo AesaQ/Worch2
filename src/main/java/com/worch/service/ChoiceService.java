@@ -9,6 +9,7 @@ import com.worch.repository.ChoiceOptionRepository;
 import com.worch.repository.ChoiceRepository;
 import com.worch.repository.VoteRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -28,12 +29,10 @@ public class ChoiceService {
 
     @Transactional
     public void vote(VoteRequest voteRequest) {
-        Vote vote = new Vote();
-
         Choice choice = choiceRepository.findById(UUID.fromString(voteRequest.choiceId()))
-                .orElseThrow(() -> new RuntimeException("Choice not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Choice not found"));
         ChoiceOption choiceOption = choiceOptionRepository.findById(UUID.fromString(voteRequest.choiceOptionId()))
-                .orElseThrow(() -> new RuntimeException("ChoiceOption not found"));
+                .orElseThrow(() -> new EntityNotFoundException("ChoiceOption not found"));
         if (!choiceOption.getChoice().getId().equals(choice.getId())) {
             throw new RuntimeException("Choice id mismatch");
         }
@@ -41,6 +40,8 @@ public class ChoiceService {
         Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UUID userId = UUID.fromString(jwt.getSubject());
         User userRef = entityManager.getReference(User.class, userId);
+
+        Vote vote = new Vote();
 
         vote.setChoice(choice);
         vote.setOption(choiceOption);
