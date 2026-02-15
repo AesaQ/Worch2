@@ -1,5 +1,8 @@
 package com.worch.service;
 
+import com.worch.exceptions.ChoiceNotFoundException;
+import com.worch.exceptions.ChoiceOptionMismatchException;
+import com.worch.exceptions.ChoiceOptionNotFoundException;
 import com.worch.model.dto.request.VoteRequest;
 import com.worch.model.entity.Choice;
 import com.worch.model.entity.ChoiceOption;
@@ -9,7 +12,6 @@ import com.worch.repository.ChoiceOptionRepository;
 import com.worch.repository.ChoiceRepository;
 import com.worch.repository.VoteRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -30,11 +32,13 @@ public class ChoiceService {
     @Transactional
     public void vote(VoteRequest voteRequest) {
         Choice choice = choiceRepository.findById(UUID.fromString(voteRequest.choiceId()))
-                .orElseThrow(() -> new EntityNotFoundException("Choice not found"));
+                .orElseThrow(() -> new ChoiceNotFoundException(voteRequest.choiceId()));
+
         ChoiceOption choiceOption = choiceOptionRepository.findById(UUID.fromString(voteRequest.choiceOptionId()))
-                .orElseThrow(() -> new EntityNotFoundException("ChoiceOption not found"));
+                .orElseThrow(() -> new ChoiceOptionNotFoundException(voteRequest.choiceOptionId()));
+
         if (!choiceOption.getChoice().getId().equals(choice.getId())) {
-            throw new RuntimeException("Choice id mismatch");
+            throw new ChoiceOptionMismatchException(choice.getId(), choiceOption.getId());
         }
 
         Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
