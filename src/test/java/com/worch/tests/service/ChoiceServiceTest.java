@@ -1,5 +1,8 @@
 package com.worch.tests.service;
 
+import com.worch.exceptions.ChoiceNotFoundException;
+import com.worch.exceptions.ChoiceOptionMismatchException;
+import com.worch.exceptions.ChoiceOptionNotFoundException;
 import com.worch.model.dto.request.VoteRequest;
 import com.worch.model.entity.*;
 import com.worch.repository.ChoiceOptionRepository;
@@ -98,14 +101,10 @@ public class ChoiceServiceTest {
     @Test
     void vote_choiceNotFound() {
         UUID choiceId = UUID.fromString(voteRequest.choiceId());
-        UUID choiceOptionId = UUID.fromString(voteRequest.choiceOptionId());
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> choiceService.vote(voteRequest));
-
-        assertEquals("Choice not found", exception.getMessage());
+        assertThrows(ChoiceNotFoundException.class, () -> choiceService.vote(voteRequest));
     }
 
     @Test
@@ -116,10 +115,23 @@ public class ChoiceServiceTest {
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> choiceService.vote(voteRequest));
+        assertThrows(ChoiceOptionNotFoundException.class, () -> choiceService.vote(voteRequest));
+    }
 
-        assertEquals("ChoiceOption not found", exception.getMessage());
+    @Test
+    void vote_choiceOptionMismatch() {
+        UUID choiceId = UUID.fromString(voteRequest.choiceId());
+        UUID choiceOptionId = UUID.fromString(voteRequest.choiceOptionId());
+
+        Choice anotherChoice = new Choice();
+        anotherChoice.setId(UUID.randomUUID());
+
+        choiceOption.setChoice(anotherChoice);
+
+        when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
+        when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
+
+        assertThrows(ChoiceOptionMismatchException.class, () -> choiceService.vote(voteRequest));
     }
 
     private void setupAuthentication() {
