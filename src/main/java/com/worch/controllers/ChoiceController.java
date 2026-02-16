@@ -13,7 +13,7 @@ public class ChoiceController {
     private final ChoiceService choiceService;
 
     @PostMapping("/vote")
-    public ResponseEntity<?> vote(@RequestBody VoteRequest voteRequest) {
+    public ResponseEntity<Void> vote(@RequestBody VoteRequest voteRequest) {
         choiceService.vote(voteRequest);
         return ResponseEntity.ok().build();
     }
