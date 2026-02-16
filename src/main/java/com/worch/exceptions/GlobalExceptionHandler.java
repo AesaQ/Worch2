@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ChoiceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleChoiceNotFound(ChoiceNotFoundException ex) {
         log.warn("Choice not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(ChoiceOptionNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleChoiceOptionNotFound(ChoiceOptionNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(ChoiceOptionMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleChoiceOptionMismatch(ChoiceOptionMismatchException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(ex.getMessage()));
     }
