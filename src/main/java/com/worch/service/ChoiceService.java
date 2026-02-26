@@ -1,5 +1,7 @@
 package com.worch.service;
 
+import com.worch.model.dto.response.ChoiceDetailDto;
+import com.worch.model.dto.response.ChoiceOptionDetailDto;
 import com.worch.model.entity.Choice;
 import com.worch.repository.ChoiceRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,16 +17,14 @@ import com.worch.model.entity.Vote;
 import com.worch.repository.ChoiceOptionRepository;
 import com.worch.repository.VoteRepository;
 import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,9 +41,57 @@ public class ChoiceService {
         }
         return choiceRepository.findAll();
     }
-    
+
+    @Transactional(readOnly = true)
+    public ChoiceDetailDto getChoiceDetail(UUID choiceId, Jwt jwt) {
+        Choice choice = choiceRepository.findById(choiceId)
+                .orElseThrow(() -> new ChoiceOptionNotFoundException(choiceId.toString()));
+
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
+
+        Optional<UUID> votedOptionId = voteRepository.findVotedOptionId(choiceId, currentUserId);
+
+        List<ChoiceOption> choiceOptions = getChoiceOptions(choiceId);
+        Map<UUID, Long> votesPerOptions = voteRepository
+                .countVotesPerOption(choiceOptions.stream().map(ChoiceOption::getId).toList())
+                .stream()
+                .collect(Collectors.toMap(
+                        r -> (UUID) r[0],
+                        r -> (Long) r[1]
+                ));
+
+        List<ChoiceOptionDetailDto> choiceOptionDetailDtoList =
+                choiceOptions.stream().map(choiceOption -> {
+                    boolean votedByCurrentUser = votedOptionId
+                            .map(choiceOption.getId()::equals)
+                            .orElse(false);
+                    return new ChoiceOptionDetailDto(
+                            choiceOption.getId(),
+                            choiceOption.getChoice().getId(),
+                            choiceOption.getName(),
+                            choiceOption.getPosition(),
+                            votesPerOptions.getOrDefault(choiceOption.getId(), 0L),
+                            votedByCurrentUser
+                    );
+                }).toList();
+
+        return new ChoiceDetailDto(
+                choice.getId(),
+                choice.getCreator().getId(),
+                choice.getChannel().getId(),
+                choice.getTitle(),
+                choice.getDescription(),
+                choice.getImageLink(),
+                choice.getPersonal(),
+                choice.getStatus(),
+                choice.getDeadline(),
+                choice.getCreatedAt(),
+                choiceOptionDetailDtoList
+        );
+    }
+
     @Transactional
-    public void vote(VoteRequest voteRequest) {
+    public void vote(VoteRequest voteRequest, Jwt jwt) {
         Choice choice = choiceRepository.findById(UUID.fromString(voteRequest.choiceId()))
                 .orElseThrow(() -> new ChoiceNotFoundException(voteRequest.choiceId()));
 
@@ -54,9 +102,9 @@ public class ChoiceService {
             throw new ChoiceOptionMismatchException(choice.getId(), choiceOption.getId());
         }
 
-        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UUID userId = UUID.fromString(jwt.getSubject());
-        User userRef = entityManager.getReference(User.class, userId);
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
+
+        User userRef = entityManager.getReference(User.class, currentUserId);
 
         Vote vote = new Vote();
 
@@ -66,5 +114,9 @@ public class ChoiceService {
         vote.setVotedAt(OffsetDateTime.now());
 
         voteRepository.save(vote);
+    }
+
+    private List<ChoiceOption> getChoiceOptions(UUID choiceId) {
+        return choiceOptionRepository.findByChoiceId(choiceId);
     }
 }
