@@ -1,5 +1,6 @@
 package com.worch.service;
 
+import com.worch.mapper.ChoiceMapper;
 import com.worch.model.dto.response.ChoiceDetailDto;
 import com.worch.model.dto.response.ChoiceOptionDetailDto;
 import com.worch.model.entity.Choice;
@@ -33,6 +34,7 @@ public class ChoiceService {
     private final ChoiceOptionRepository choiceOptionRepository;
     private final VoteRepository voteRepository;
     private final EntityManager entityManager;
+    private final ChoiceMapper choiceMapper;
 
     @Transactional(readOnly = true)
     public List<Choice> getChoices(Optional<UUID> creatorId) {
@@ -60,34 +62,7 @@ public class ChoiceService {
                         r -> (Long) r[1]
                 ));
 
-        List<ChoiceOptionDetailDto> choiceOptionDetailDtoList =
-                choiceOptions.stream().map(choiceOption -> {
-                    boolean votedByCurrentUser = votedOptionId
-                            .map(choiceOption.getId()::equals)
-                            .orElse(false);
-                    return new ChoiceOptionDetailDto(
-                            choiceOption.getId(),
-                            choiceOption.getChoice().getId(),
-                            choiceOption.getName(),
-                            choiceOption.getPosition(),
-                            votesPerOptions.getOrDefault(choiceOption.getId(), 0L),
-                            votedByCurrentUser
-                    );
-                }).toList();
-
-        return new ChoiceDetailDto(
-                choice.getId(),
-                choice.getCreator().getId(),
-                choice.getChannel().getId(),
-                choice.getTitle(),
-                choice.getDescription(),
-                choice.getImageLink(),
-                choice.getPersonal(),
-                choice.getStatus(),
-                choice.getDeadline(),
-                choice.getCreatedAt(),
-                choiceOptionDetailDtoList
-        );
+        return choiceMapper.toDetailDto(choice, choiceOptions, votesPerOptions, votedOptionId);
     }
 
     @Transactional
