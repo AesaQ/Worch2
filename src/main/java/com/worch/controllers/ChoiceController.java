@@ -1,6 +1,7 @@
 package com.worch.controllers;
 
 import com.worch.mapper.ChoiceMapper;
+import com.worch.model.dto.response.ChoiceDetailDto;
 import com.worch.model.dto.response.ChoiceResponseDto;
 import com.worch.model.dto.request.VoteRequest;
 import com.worch.model.entity.Choice;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,16 +27,25 @@ public class ChoiceController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<ChoiceResponseDto>> getChoices(@RequestParam(required = false) Optional<UUID> creatorId) {
+    public ResponseEntity<List<ChoiceResponseDto>> getChoices(
+            @RequestParam(required = false) Optional<UUID> creatorId) {
         List<Choice> choices = choiceService.getChoices(creatorId);
 
         List<ChoiceResponseDto> responseDtos = choices.stream().map(choiceMapper::toDto).toList();
         return new ResponseEntity<>(responseDtos, HttpStatus.OK);
     }
-  
-     @PostMapping("/vote")
-    public ResponseEntity<Void> vote(@RequestBody VoteRequest voteRequest) {
-        choiceService.vote(voteRequest);
+
+    @GetMapping("/{choiceId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ChoiceDetailDto> getChoice(@PathVariable String choiceId,
+                                                     @AuthenticationPrincipal Jwt jwt) {
+        return new ResponseEntity<>(choiceService.getChoiceDetail(UUID.fromString(choiceId), jwt), HttpStatus.OK);
+    }
+
+    @PostMapping("/vote")
+    public ResponseEntity<Void> vote(@RequestBody VoteRequest voteRequest,
+                                     @AuthenticationPrincipal Jwt jwt) {
+        choiceService.vote(voteRequest, jwt);
         return ResponseEntity.ok().build();
     }
 }
