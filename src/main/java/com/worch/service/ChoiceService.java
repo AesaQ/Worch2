@@ -1,6 +1,9 @@
 package com.worch.service;
 
 import com.worch.exceptions.*;
+import com.worch.mapper.ChoiceMapper;
+import com.worch.model.dto.response.ChoiceDetailDto;
+import com.worch.model.dto.response.ChoiceOptionDetailDto;
 import com.worch.model.entity.Choice;
 import com.worch.repository.ChoiceRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +22,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +35,7 @@ public class ChoiceService {
     private final ChoiceOptionRepository choiceOptionRepository;
     private final VoteRepository voteRepository;
     private final EntityManager entityManager;
+    private final ChoiceMapper choiceMapper;
 
     @Transactional(readOnly = true)
     public List<Choice> getChoices(Optional<UUID> creatorId) {
@@ -38,7 +44,28 @@ public class ChoiceService {
         }
         return choiceRepository.findAll();
     }
-    
+
+    @Transactional(readOnly = true)
+    public ChoiceDetailDto getChoiceDetail(UUID choiceId, Jwt jwt) {
+        Choice choice = choiceRepository.findById(choiceId)
+                .orElseThrow(() -> new ChoiceOptionNotFoundException(choiceId.toString()));
+
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
+
+        Optional<UUID> votedOptionId = voteRepository.findVotedOptionId(choiceId, currentUserId);
+
+        List<ChoiceOption> choiceOptions = getChoiceOptions(choiceId);
+        Map<UUID, Long> votesPerOptions = voteRepository
+                .countVotesPerOption(choiceOptions.stream().map(ChoiceOption::getId).toList())
+                .stream()
+                .collect(Collectors.toMap(
+                        r -> (UUID) r[0],
+                        r -> (Long) r[1]
+                ));
+
+        return choiceMapper.toDetailDto(choice, choiceOptions, votesPerOptions, votedOptionId);
+    }
+
     @Transactional
     public String vote(VoteRequest voteRequest) {
         Choice choice = choiceRepository.findById(UUID.fromString(voteRequest.choiceId()))
@@ -51,9 +78,9 @@ public class ChoiceService {
             throw new ChoiceOptionMismatchException(choice.getId(), choiceOption.getId());
         }
 
-        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UUID userId = UUID.fromString(jwt.getSubject());
-        User userRef = entityManager.getReference(User.class, userId);
+        UUID currentUserId = UUID.fromString(jwt.getSubject());
+
+        User userRef = entityManager.getReference(User.class, currentUserId);
 
         Vote vote = new Vote();
 
@@ -74,5 +101,9 @@ public class ChoiceService {
             throw e;
         }
         return "{\"message\":\"Vote accepted\"}";
+    }
+
+    private List<ChoiceOption> getChoiceOptions(UUID choiceId) {
+        return choiceOptionRepository.findByChoiceId(choiceId);
     }
 }

@@ -44,14 +44,17 @@ public class ChoiceServiceTest {
     @InjectMocks
     private ChoiceService choiceService;
 
-    private static VoteRequest voteRequest;
-    private static Choice choice;
-    private static ChoiceOption choiceOption;
+    private VoteRequest voteRequest;
+    private Choice choice;
+    private ChoiceOption choiceOption;
+    private String userId;
+    private Jwt jwt;
 
     @BeforeEach
     void setUp() {
         String choiceId = "7c9e3b5a-2f4d-4a6b-8c1e-9f2d3a5b7c9e";
         String choiceOptionId = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d";
+        userId = "b3f8c2a1-6d4e-4c9a-9f7b-2e5d8a1c6f3b";
 
         voteRequest = new VoteRequest(choiceId, choiceOptionId);
 
@@ -66,6 +69,11 @@ public class ChoiceServiceTest {
         choiceOption = new ChoiceOption();
         choiceOption.setId(UUID.fromString(choiceOptionId));
         choiceOption.setChoice(choice);
+
+        jwt = Jwt.withTokenValue("token")
+                .header("alg", "none")
+                .claim("sub", userId)
+                .build();
     }
 
     @AfterEach
@@ -75,8 +83,6 @@ public class ChoiceServiceTest {
 
     @Test
     void vote_success() {
-        setupAuthentication();
-
         UUID choiceId = UUID.fromString(voteRequest.choiceId());
         UUID choiceOptionId = UUID.fromString(voteRequest.choiceOptionId());
 
@@ -105,7 +111,7 @@ public class ChoiceServiceTest {
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.empty());
 
-        assertThrows(ChoiceNotFoundException.class, () -> choiceService.vote(voteRequest));
+        assertThrows(ChoiceNotFoundException.class, () -> choiceService.vote(voteRequest, jwt));
     }
 
     @Test
@@ -116,7 +122,7 @@ public class ChoiceServiceTest {
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.empty());
 
-        assertThrows(ChoiceOptionNotFoundException.class, () -> choiceService.vote(voteRequest));
+        assertThrows(ChoiceOptionNotFoundException.class, () -> choiceService.vote(voteRequest, jwt));
     }
 
     @Test
@@ -131,7 +137,7 @@ public class ChoiceServiceTest {
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
-
+      
         assertThrows(ChoiceOptionMismatchException.class, () -> choiceService.vote(voteRequest));
     }
 
