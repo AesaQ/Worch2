@@ -1,16 +1,15 @@
 package com.worch.service;
 
+import com.worch.exceptions.*;
 import com.worch.mapper.ChoiceMapper;
 import com.worch.model.dto.response.ChoiceDetailDto;
-import com.worch.model.dto.response.ChoiceOptionDetailDto;
 import com.worch.model.entity.Choice;
+import com.worch.model.enums.ChoiceStatus;
 import com.worch.repository.ChoiceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.worch.exceptions.ChoiceNotFoundException;
-import com.worch.exceptions.ChoiceOptionMismatchException;
-import com.worch.exceptions.ChoiceOptionNotFoundException;
 import com.worch.model.dto.request.VoteRequest;
 import com.worch.model.entity.ChoiceOption;
 import com.worch.model.entity.User;
@@ -34,6 +33,7 @@ public class ChoiceService {
     private final ChoiceOptionRepository choiceOptionRepository;
     private final VoteRepository voteRepository;
     private final EntityManager entityManager;
+    private final CurrentUserService currentUserService;
     private final ChoiceMapper choiceMapper;
 
     @Transactional(readOnly = true)
@@ -45,11 +45,11 @@ public class ChoiceService {
     }
 
     @Transactional(readOnly = true)
-    public ChoiceDetailDto getChoiceDetail(UUID choiceId, Jwt jwt) {
+    public ChoiceDetailDto getChoiceDetail(UUID choiceId) {
         Choice choice = choiceRepository.findById(choiceId)
                 .orElseThrow(() -> new ChoiceOptionNotFoundException(choiceId.toString()));
 
-        UUID currentUserId = UUID.fromString(jwt.getSubject());
+        UUID currentUserId = currentUserService.getCurrentUserId();
 
         Optional<UUID> votedOptionId = voteRepository.findVotedOptionId(choiceId, currentUserId);
 
@@ -66,6 +66,20 @@ public class ChoiceService {
     }
 
     @Transactional
+    public String closeChoice(UUID choiceId) {
+        Choice choice = choiceRepository.findById(choiceId)
+                .orElseThrow(() -> new ChoiceNotFoundException(choiceId.toString()));
+
+        if (!choice.getCreator().getId().equals(currentUserService.getCurrentUserId())) {
+            throw new AccessDeniedException("Закрывать чойс может только его создатель");
+        }
+
+        choice.setStatus(ChoiceStatus.CLOSED);
+        choiceRepository.save(choice);
+        return "Choice closed";
+    }
+
+    @Transactional
     public void vote(VoteRequest voteRequest, Jwt jwt) {
         Choice choice = choiceRepository.findById(UUID.fromString(voteRequest.choiceId()))
                 .orElseThrow(() -> new ChoiceNotFoundException(voteRequest.choiceId()));
@@ -73,16 +87,12 @@ public class ChoiceService {
         ChoiceOption choiceOption = choiceOptionRepository.findById(UUID.fromString(voteRequest.choiceOptionId()))
                 .orElseThrow(() -> new ChoiceOptionNotFoundException(voteRequest.choiceOptionId()));
 
-        if (!choiceOption.getChoice().getId().equals(choice.getId())) {
-            throw new ChoiceOptionMismatchException(choice.getId(), choiceOption.getId());
-        }
+        validateChoiceVote(choice, choiceOption);
 
         UUID currentUserId = UUID.fromString(jwt.getSubject());
-
         User userRef = entityManager.getReference(User.class, currentUserId);
 
         Vote vote = new Vote();
-
         vote.setChoice(choice);
         vote.setOption(choiceOption);
         vote.setUser(userRef);
@@ -93,5 +103,21 @@ public class ChoiceService {
 
     private List<ChoiceOption> getChoiceOptions(UUID choiceId) {
         return choiceOptionRepository.findByChoiceId(choiceId);
+    }
+
+    private void validateChoiceVote(Choice choice, ChoiceOption choiceOption) {
+        if (choice.getStatus().equals(ChoiceStatus.CLOSED)) {
+            throw new ChoiceClosedException(choice.getId().toString());
+        }
+
+        if (choice.getDeadline() != null &&
+                choice.getDeadline().isBefore(OffsetDateTime.now())) {
+            throw new ChoiceExpiredException(choice.getId().toString());
+        }
+
+        if (!choiceOption.getChoice().getId().equals(choice.getId())) {
+            throw new ChoiceOptionMismatchException(choice.getId(), choiceOption.getId());
+        }
+
     }
 }

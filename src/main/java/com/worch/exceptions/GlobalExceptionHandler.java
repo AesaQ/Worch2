@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -144,6 +143,18 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("Вы уже проголосовали за этот выбор"));
+    }
+
+    @ExceptionHandler(ChoiceExpiredException.class)
+    public ResponseEntity<ErrorResponse> handleChoiceExpired(ChoiceExpiredException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse("Время голосования вышло: " + ex.getMessage()));
+    }
+
+    @ExceptionHandler(ChoiceClosedException.class)
+    public ResponseEntity<ErrorResponse> handleChoiceClosed(ChoiceClosedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse("Голосование закрыто: " + ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

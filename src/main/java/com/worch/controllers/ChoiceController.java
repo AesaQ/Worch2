@@ -37,12 +37,18 @@ public class ChoiceController {
 
     @GetMapping("/{choiceId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ChoiceDetailDto> getChoice(@PathVariable String choiceId,
-                                                     @AuthenticationPrincipal Jwt jwt) {
-        return new ResponseEntity<>(choiceService.getChoiceDetail(UUID.fromString(choiceId), jwt), HttpStatus.OK);
+    public ResponseEntity<ChoiceDetailDto> getChoice(@PathVariable String choiceId) {
+        return new ResponseEntity<>(choiceService.getChoiceDetail(UUID.fromString(choiceId)), HttpStatus.OK);
+    }
+
+    @PostMapping("/{choiceId}/close")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> closeChoice(@PathVariable String choiceId) {
+        return new ResponseEntity<>(choiceService.closeChoice(UUID.fromString(choiceId)), HttpStatus.OK);
     }
 
     @PostMapping("/vote")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> vote(@RequestBody VoteRequest voteRequest,
                                      @AuthenticationPrincipal Jwt jwt) {
         choiceService.vote(voteRequest, jwt);
