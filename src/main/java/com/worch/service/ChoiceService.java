@@ -19,11 +19,8 @@ import com.worch.repository.VoteRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,11 +34,26 @@ public class ChoiceService {
     private final ChoiceMapper choiceMapper;
 
     @Transactional(readOnly = true)
-    public List<Choice> getChoices(Optional<UUID> creatorId) {
-        if (creatorId.isPresent()) {
+    public List<Choice> getChoices(Optional<UUID> creatorId, Optional<String> choiceStatusOpt) {
+        ChoiceStatus choiceStatus;
+        try {
+            choiceStatus = choiceStatusOpt.map(ChoiceStatus::fromString).orElse(null);
+        } catch (InvalidEnumValueException e) {
+            throw new IllegalArgumentException("Status not found: " + choiceStatusOpt.get());
+        }
+
+        if (creatorId.isPresent() && choiceStatus == null) {
             return choiceRepository.getAllByCreatorId(creatorId.get());
         }
-        return choiceRepository.findAll();
+        else if (choiceStatus != null && creatorId.isEmpty()) {
+            return choiceRepository.findByStatus(choiceStatus);
+        }
+        else if (creatorId.isPresent()) {
+            return choiceRepository.getAllByCreatorIdAndStatus(creatorId.get(), choiceStatus);
+        }
+        else {
+            return choiceRepository.findAll();
+        }
     }
 
     @Transactional(readOnly = true)

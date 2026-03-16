@@ -28,8 +28,10 @@ public class ChoiceController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ChoiceResponseDto>> getChoices(
-            @RequestParam(required = false) Optional<UUID> creatorId) {
-        List<Choice> choices = choiceService.getChoices(creatorId);
+            @RequestParam(required = false) Optional<UUID> creatorId,
+            @RequestParam(required = false) Optional<String> status
+    ) {
+        List<Choice> choices = choiceService.getChoices(creatorId, status);
 
         List<ChoiceResponseDto> responseDtos = choices.stream().map(choiceMapper::toDto).toList();
         return new ResponseEntity<>(responseDtos, HttpStatus.OK);
