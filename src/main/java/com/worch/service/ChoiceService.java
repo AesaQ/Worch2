@@ -100,7 +100,7 @@ public class ChoiceService {
             }
             throw e;
         }
-        return "{\"message\":\"Vote accepted\"}";
+        return "Vote accepted";
     }
 
     private List<ChoiceOption> getChoiceOptions(UUID choiceId) {

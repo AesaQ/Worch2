@@ -37,8 +37,8 @@ public class IdempotencyServiceTest {
     @InjectMocks
     private IdempotencyService idempotencyService;
 
-    private String idempotencyKey = "IdempotencyKey";
-    private String endpoint = "EndPoint";
+    private final String idempotencyKey = "IdempotencyKey";
+    private final String endpoint = "EndPoint";
 
     @Test
     void checkIdempotencyKey_newKey_createsInProgressAndReturnsNull() {
