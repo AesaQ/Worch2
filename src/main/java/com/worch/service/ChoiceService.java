@@ -1,16 +1,16 @@
 package com.worch.service;
 
+import com.worch.exceptions.*;
 import com.worch.mapper.ChoiceMapper;
 import com.worch.model.dto.response.ChoiceDetailDto;
 import com.worch.model.dto.response.ChoiceOptionDetailDto;
 import com.worch.model.entity.Choice;
 import com.worch.repository.ChoiceRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.worch.exceptions.ChoiceNotFoundException;
-import com.worch.exceptions.ChoiceOptionMismatchException;
-import com.worch.exceptions.ChoiceOptionNotFoundException;
 import com.worch.model.dto.request.VoteRequest;
 import com.worch.model.entity.ChoiceOption;
 import com.worch.model.entity.User;
@@ -18,6 +18,7 @@ import com.worch.model.entity.Vote;
 import com.worch.repository.ChoiceOptionRepository;
 import com.worch.repository.VoteRepository;
 import jakarta.persistence.EntityManager;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.List;
@@ -66,7 +67,7 @@ public class ChoiceService {
     }
 
     @Transactional
-    public void vote(VoteRequest voteRequest, Jwt jwt) {
+    public String vote(VoteRequest voteRequest) {
         Choice choice = choiceRepository.findById(UUID.fromString(voteRequest.choiceId()))
                 .orElseThrow(() -> new ChoiceNotFoundException(voteRequest.choiceId()));
 
@@ -88,7 +89,18 @@ public class ChoiceService {
         vote.setUser(userRef);
         vote.setVotedAt(OffsetDateTime.now());
 
-        voteRepository.save(vote);
+        try {
+            voteRepository.save(vote);
+            voteRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            if (e.getCause() instanceof ConstraintViolationException cve &&
+                    "ux_vote_user_choice".equals(cve.getConstraintName())) {
+
+                throw new DuplicateVoteException(e.getMessage());
+            }
+            throw e;
+        }
+        return "Vote accepted";
     }
 
     private List<ChoiceOption> getChoiceOptions(UUID choiceId) {
