@@ -3,23 +3,23 @@ package com.worch.tests.service;
 import com.worch.exceptions.ChoiceNotFoundException;
 import com.worch.exceptions.ChoiceOptionMismatchException;
 import com.worch.exceptions.ChoiceOptionNotFoundException;
-import com.worch.exceptions.DuplicateVoteException;
 import com.worch.model.dto.request.VoteRequest;
 import com.worch.model.entity.*;
 import com.worch.repository.ChoiceOptionRepository;
 import com.worch.repository.ChoiceRepository;
 import com.worch.repository.VoteRepository;
 import com.worch.service.ChoiceService;
-import com.worch.service.IdempotencyService;
 import jakarta.persistence.EntityManager;
-import org.hibernate.exception.ConstraintViolationException;
-import org.junit.jupiter.api.*;
+import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -89,7 +89,7 @@ public class ChoiceServiceTest {
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
 
-        String response = choiceService.vote(voteRequest);
+        choiceService.vote(voteRequest, jwt);
 
         ArgumentCaptor<Vote> voteCaptor = ArgumentCaptor.forClass(Vote.class);
         verify(voteRepository).save(voteCaptor.capture());
@@ -100,8 +100,7 @@ public class ChoiceServiceTest {
                 () -> assertNotNull(vote),
                 () -> assertEquals(choice, vote.getChoice()),
                 () -> assertEquals(choiceOption, vote.getOption()),
-                () -> assertNotNull(vote.getVotedAt()),
-                () -> assertEquals("Vote accepted", response)
+                () -> assertNotNull(vote.getVotedAt())
         );
     }
 
@@ -137,42 +136,7 @@ public class ChoiceServiceTest {
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
-      
-        assertThrows(ChoiceOptionMismatchException.class, () -> choiceService.vote(voteRequest));
-    }
 
-    @Test
-    void vote_duplicateVote() {
-        setupAuthentication();
-
-        UUID choiceId = UUID.fromString(voteRequest.choiceId());
-        UUID choiceOptionId = UUID.fromString(voteRequest.choiceOptionId());
-
-        when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
-        when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
-
-        ConstraintViolationException constraintException =
-                new ConstraintViolationException("duplicate", null, "ux_vote_user_choice");
-
-        DataIntegrityViolationException dataException =
-                new DataIntegrityViolationException("error", constraintException);
-
-        when(voteRepository.save(any(Vote.class))).thenThrow(dataException);
-
-        assertThrows(DuplicateVoteException.class,
-                () -> choiceService.vote(voteRequest));
-    }
-
-    private void setupAuthentication() {
-        UUID userId = UUID.randomUUID();
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getSubject()).thenReturn(userId.toString());
-
-        var auth = mock(org.springframework.security.core.Authentication.class);
-        when(auth.getPrincipal()).thenReturn(jwt);
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        User userRef = User.builder().id(userId).login("user").build();
-        when(entityManager.getReference(User.class, userId)).thenReturn(userRef);
+        assertThrows(ChoiceOptionMismatchException.class, () -> choiceService.vote(voteRequest, jwt));
     }
 }

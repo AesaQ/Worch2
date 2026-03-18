@@ -1,1 +1,0 @@
-alter table idempotency_key alter column response_status type varchar(255);

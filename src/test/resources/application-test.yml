@@ -6,31 +6,25 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
-  flyway:
-    enabled: true
-    locations: classpath:db/migration/ddl
-    baseline-on-migrate: false
-    out-of-order: true
-
-#  security:
-#    oauth2:
-#      resourceserver:
-#        jwt:
-#          issuer-uri: http://localhost:8080/realms/test
-#      client:
-#        provider:
-#          keycloak:
-#            issuer-uri: http://localhost:8080/realms/test
-#        registration:
-#          keycloak:
-#            client-id: test-client
-#            client-secret: test-secret
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/test
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/test
+        registration:
+          keycloak:
+            client-id: test-client
+            client-secret: test-secret
 
 telegram:
   bot:
