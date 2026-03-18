@@ -155,12 +155,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleChoiceClosed(ChoiceClosedException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("Голосование закрыто: " + ex.getMessage()));
+
+    @ExceptionHandler(IdempotencyInterruptedException.class)
+    public ResponseEntity<ErrorResponse> handleIdempotencyInterrupted() {
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new ErrorResponse("Выполнение запроса было прервано"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         log.warn("Bad request: {}", ex.getMessage());
         return ResponseEntity.badRequest()
+                .body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(IdempotencyInProgressException.class)
+    public ResponseEntity<ErrorResponse> handleLoginAlreadyExists(IdempotencyInProgressException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
