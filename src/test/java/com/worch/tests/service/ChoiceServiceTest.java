@@ -8,8 +8,8 @@ import com.worch.repository.ChoiceOptionRepository;
 import com.worch.repository.ChoiceRepository;
 import com.worch.repository.VoteRepository;
 import com.worch.service.ChoiceService;
+import com.worch.service.CurrentUserService;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -40,6 +39,8 @@ public class ChoiceServiceTest {
     @Mock
     private ChoiceOptionRepository choiceOptionRepository;
     @Mock
+    private CurrentUserService currentUserService;
+    @Mock
     private EntityManager entityManager;
 
     @InjectMocks
@@ -49,7 +50,6 @@ public class ChoiceServiceTest {
     private Choice choice;
     private ChoiceOption choiceOption;
     private String userId;
-    private Jwt jwt;
 
     @BeforeEach
     void setUp() {
@@ -73,10 +73,6 @@ public class ChoiceServiceTest {
         choiceOption.setId(UUID.fromString(choiceOptionId));
         choiceOption.setChoice(choice);
 
-        jwt = Jwt.withTokenValue("token")
-                .header("alg", "none")
-                .claim("sub", userId)
-                .build();
     }
 
     @AfterEach
@@ -91,8 +87,9 @@ public class ChoiceServiceTest {
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
+        when(currentUserService.getCurrentUserId()).thenReturn(UUID.fromString(userId));
 
-        choiceService.vote(voteRequest, jwt);
+        choiceService.vote(voteRequest);
 
         ArgumentCaptor<Vote> voteCaptor = ArgumentCaptor.forClass(Vote.class);
         verify(voteRepository).save(voteCaptor.capture());
@@ -113,7 +110,7 @@ public class ChoiceServiceTest {
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.empty());
 
-        assertThrows(ChoiceNotFoundException.class, () -> choiceService.vote(voteRequest, jwt));
+        assertThrows(ChoiceNotFoundException.class, () -> choiceService.vote(voteRequest));
     }
 
     @Test
@@ -124,7 +121,7 @@ public class ChoiceServiceTest {
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.empty());
 
-        assertThrows(ChoiceOptionNotFoundException.class, () -> choiceService.vote(voteRequest, jwt));
+        assertThrows(ChoiceOptionNotFoundException.class, () -> choiceService.vote(voteRequest));
     }
 
     @Test
@@ -140,7 +137,7 @@ public class ChoiceServiceTest {
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
 
-        assertThrows(ChoiceOptionMismatchException.class, () -> choiceService.vote(voteRequest, jwt));
+        assertThrows(ChoiceOptionMismatchException.class, () -> choiceService.vote(voteRequest));
     }
 
     @Test
@@ -154,7 +151,7 @@ public class ChoiceServiceTest {
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
 
-        assertThrows(ChoiceClosedException.class, () -> choiceService.vote(voteRequest, jwt));
+        assertThrows(ChoiceClosedException.class, () -> choiceService.vote(voteRequest));
 
         verify(voteRepository, never()).save(any(Vote.class));
     }
@@ -170,7 +167,7 @@ public class ChoiceServiceTest {
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
 
-        assertThrows(ChoiceExpiredException.class, () -> choiceService.vote(voteRequest, jwt));
+        assertThrows(ChoiceExpiredException.class, () -> choiceService.vote(voteRequest));
 
         verify(voteRepository, never()).save(any(Vote.class));
     }
@@ -185,8 +182,9 @@ public class ChoiceServiceTest {
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
+        when(currentUserService.getCurrentUserId()).thenReturn(UUID.fromString(userId));
 
-        choiceService.vote(voteRequest, jwt);
+        choiceService.vote(voteRequest);
 
         ArgumentCaptor<Vote> voteCaptor = ArgumentCaptor.forClass(Vote.class);
         verify(voteRepository).save(voteCaptor.capture());
@@ -211,8 +209,9 @@ public class ChoiceServiceTest {
 
         when(choiceRepository.findById(choiceId)).thenReturn(Optional.of(choice));
         when(choiceOptionRepository.findById(choiceOptionId)).thenReturn(Optional.of(choiceOption));
+        when(currentUserService.getCurrentUserId()).thenReturn(UUID.fromString(userId));
 
-        choiceService.vote(voteRequest, jwt);
+        choiceService.vote(voteRequest);
 
         verify(voteRepository).save(any(Vote.class));
     }
@@ -262,7 +261,8 @@ public class ChoiceServiceTest {
 
         assertAll(
                 () -> assertEquals(2, result.size()),
-                () -> assertTrue(result.stream().allMatch(choice -> choice.getStatus().equals(ChoiceStatus.ACTIVE))),
+                () -> assertTrue(result.stream()
+                        .allMatch(choice -> choice.getStatus().equals(ChoiceStatus.ACTIVE))),
                 () -> assertEquals(List.of(activeChoice1, activeChoice2), result)
         );
 

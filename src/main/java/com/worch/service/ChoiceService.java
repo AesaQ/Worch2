@@ -17,7 +17,6 @@ import com.worch.model.entity.Vote;
 import com.worch.repository.ChoiceOptionRepository;
 import com.worch.repository.VoteRepository;
 import jakarta.persistence.EntityManager;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.*;
 import java.time.OffsetDateTime;
@@ -92,7 +91,7 @@ public class ChoiceService {
     }
 
     @Transactional
-    public void vote(VoteRequest voteRequest, Jwt jwt) {
+    public void vote(VoteRequest voteRequest) {
         Choice choice = choiceRepository.findById(UUID.fromString(voteRequest.choiceId()))
                 .orElseThrow(() -> new ChoiceNotFoundException(voteRequest.choiceId()));
 
@@ -101,7 +100,7 @@ public class ChoiceService {
 
         validateChoiceVote(choice, choiceOption);
 
-        UUID currentUserId = UUID.fromString(jwt.getSubject());
+        UUID currentUserId = currentUserService.getCurrentUserId();
         User userRef = entityManager.getReference(User.class, currentUserId);
 
         Vote vote = new Vote();

@@ -51,9 +51,8 @@ public class ChoiceController {
 
     @PostMapping("/vote")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> vote(@RequestBody VoteRequest voteRequest,
-                                     @AuthenticationPrincipal Jwt jwt) {
-        choiceService.vote(voteRequest, jwt);
+    public ResponseEntity<Void> vote(@RequestBody VoteRequest voteRequest) {
+        choiceService.vote(voteRequest);
         return ResponseEntity.ok().build();
     }
 }
