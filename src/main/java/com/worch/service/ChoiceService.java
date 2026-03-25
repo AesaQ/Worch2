@@ -81,7 +81,7 @@ public class ChoiceService {
     }
 
     @Transactional
-    public String closeChoice(UUID choiceId) {
+    public void closeChoice(UUID choiceId) {
         Choice choice = choiceRepository.findById(choiceId)
                 .orElseThrow(() -> new ChoiceNotFoundException(choiceId.toString()));
 
@@ -91,7 +91,6 @@ public class ChoiceService {
 
         choice.setStatus(ChoiceStatus.CLOSED);
         choiceRepository.save(choice);
-        return "Choice closed";
     }
 
     @Transactional
