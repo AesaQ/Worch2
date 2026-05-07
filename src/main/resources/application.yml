@@ -47,6 +47,10 @@ spring:
             client-secret: my-fixed-secret
             scope: openid
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+
 server:
   port: 8080
 

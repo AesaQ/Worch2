@@ -2,6 +2,7 @@ package com.worch.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.worch.model.dto.response.ErrorResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -72,10 +74,22 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
+                            System.out.println("401 ENTRY POINT: " + authException.getMessage());
                             response.setStatus(401);
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                             ErrorResponse errorResponse = new ErrorResponse("Требуется аутентификация");
                             objectMapper.writeValue(response.getOutputStream(), errorResponse);
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            System.out.println("403 ACCESS DENIED: " + accessDeniedException.getMessage());
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
+                            objectMapper.writeValue(
+                                    response.getOutputStream(),
+                                    new ErrorResponse("Доступ запрещён")
+                            );
                         })
                 )
                 .csrf(AbstractHttpConfigurer::disable);

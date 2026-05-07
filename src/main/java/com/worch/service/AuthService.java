@@ -13,6 +13,8 @@ import com.worch.model.entity.User;
 import com.worch.repository.UserRepository;
 import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -36,12 +38,15 @@ public class AuthService {
         User user = userMapper.toEntity(request);
         user.setCreatedAt(OffsetDateTime.now());
 
+        UUID keycloakUserId;
         try {
-            keycloakService.createUser(request);
+            keycloakUserId = keycloakService.createUser(request);
         } catch (KeycloakOperationException e) {
             log.error("Ошибка регистрации пользователя в Keycloak: {}", e.getMessage());
             throw e;
         }
+
+        user.setId(keycloakUserId);
 
         try {
             userRepository.save(user);

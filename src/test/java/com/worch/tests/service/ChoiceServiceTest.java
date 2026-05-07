@@ -10,9 +10,9 @@ import com.worch.repository.VoteRepository;
 import com.worch.service.ChoiceService;
 import com.worch.service.CurrentUserService;
 import jakarta.persistence.EntityManager;
-import com.worch.service.IdempotencyService;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -142,8 +142,6 @@ public class ChoiceServiceTest {
 
     @Test
     void vote_duplicateVote() {
-        setupAuthentication();
-
         UUID choiceId = UUID.fromString(voteRequest.choiceId());
         UUID choiceOptionId = UUID.fromString(voteRequest.choiceOptionId());
 
@@ -386,19 +384,5 @@ public class ChoiceServiceTest {
         verify(choiceRepository, never()).findByStatus(any());
         verify(choiceRepository, never()).getAllByCreatorIdAndStatus(any(), any());
         verify(choiceRepository, never()).findAll();
-    }
-
-    private void setupAuthentication() {
-        UUID userId = UUID.randomUUID();
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getSubject()).thenReturn(userId.toString());
-
-        var auth = mock(org.springframework.security.core.Authentication.class);
-        when(auth.getPrincipal()).thenReturn(jwt);
-        SecurityContextHolder.getContext().setAuthentication(auth);
-
-        assertThrows(ChoiceOptionMismatchException.class, () -> choiceService.vote(voteRequest, jwt));
-        User userRef = User.builder().id(userId).login("user").build();
-        when(entityManager.getReference(User.class, userId)).thenReturn(userRef);
     }
 }

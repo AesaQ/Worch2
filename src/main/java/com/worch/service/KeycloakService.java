@@ -6,6 +6,8 @@ import com.worch.model.dto.request.RegisterRequest;
 import jakarta.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
@@ -28,11 +30,12 @@ public class KeycloakService {
     private final OAuth2Properties oauth2Properties;
 
 
-    public void createUser(RegisterRequest request) {
+    public UUID createUser(RegisterRequest request) {
         UserRepresentation userRep = buildUserRepresentation(request);
         String userId = createUserInKeycloak(userRep);
         assignDefaultRole(userId);
         log.debug("Пользователь '{}' создан в Keycloak с ролью '{}'", request.login(), defaultRole);
+        return UUID.fromString(userId);
     }
 
     public void rollbackUserCreation(String login) {

@@ -46,7 +46,7 @@ public class IdempotencyServiceTest {
 
         when(idempotencyRepository.findByIdemKey(idempotencyKey)).thenReturn(Optional.empty());
 
-        String result = idempotencyService.checkIdempotencyKey(idempotencyKey, endpoint);
+        idempotencyService.checkIdempotencyKey(idempotencyKey, endpoint);
 
         ArgumentCaptor<IdempotencyKey> captor = ArgumentCaptor.forClass(IdempotencyKey.class);
         verify(idempotencyRepository).save(captor.capture());
@@ -54,7 +54,6 @@ public class IdempotencyServiceTest {
         IdempotencyKey savedKey = captor.getValue();
 
         assertAll(
-                () -> assertNull(result),
                 () -> assertEquals(idempotencyKey, savedKey.getIdemKey()),
                 () -> assertEquals(endpoint, savedKey.getEndpoint()),
                 () -> assertEquals(IdempotencyStatus.IN_PROGRESS, savedKey.getResponseStatus()),
@@ -63,7 +62,7 @@ public class IdempotencyServiceTest {
     }
 
     @Test
-    void checkIdempotencyKey_completed_returnsResponseBody() {
+    void checkIdempotencyKey_completed_returnsFalse() {
         IdempotencyKey key = new IdempotencyKey();
         key.setIdemKey(idempotencyKey);
         key.setEndpoint(endpoint);
@@ -72,9 +71,9 @@ public class IdempotencyServiceTest {
 
         when(idempotencyRepository.findByIdemKey(idempotencyKey)).thenReturn(Optional.of(key));
 
-        String result = idempotencyService.checkIdempotencyKey(idempotencyKey, endpoint);
+        Boolean result = idempotencyService.checkIdempotencyKey(idempotencyKey, endpoint);
 
-        assertEquals("Mission Completed", result);
+        assertEquals(Boolean.FALSE, result);
     }
 
     @Test
@@ -93,7 +92,7 @@ public class IdempotencyServiceTest {
     }
 
     @Test
-    void checkIdempotencyKey_inProgressThenCompleted_returnsResponseBody() {
+    void checkIdempotencyKey_inProgressThenCompleted_returnsFalse() {
         IdempotencyKey inProgressKey = new IdempotencyKey();
         inProgressKey.setIdemKey(idempotencyKey);
         inProgressKey.setEndpoint(endpoint);
@@ -111,9 +110,9 @@ public class IdempotencyServiceTest {
                 .thenReturn(Optional.of(inProgressKey))
                 .thenReturn(Optional.of(completedKey));
 
-        String result = idempotencyService.checkIdempotencyKey(idempotencyKey, endpoint);
+        Boolean result = idempotencyService.checkIdempotencyKey(idempotencyKey, endpoint);
 
-        assertEquals("Mission Completed", result);
+        assertEquals(Boolean.FALSE, result);
     }
 
     @Test

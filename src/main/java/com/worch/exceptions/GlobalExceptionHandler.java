@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -129,6 +130,12 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(ACCESS_DENIED_MESSAGE));
     }
 
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse("Доступ запрещён"));
+    }
+
     @ExceptionHandler(UserNotAuthenticatedException.class)
     public ResponseEntity<ErrorResponse> handleUserNotAuthenticated(UserNotAuthenticatedException ex) {
         log.warn("Unauthenticated user attempt: {}", ex.getMessage());
@@ -155,6 +162,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleChoiceClosed(ChoiceClosedException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("Голосование закрыто: " + ex.getMessage()));
+    }
 
     @ExceptionHandler(IdempotencyInterruptedException.class)
     public ResponseEntity<ErrorResponse> handleIdempotencyInterrupted() {

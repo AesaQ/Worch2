@@ -21,7 +21,6 @@ import lombok.Setter;
 public class User {
 
     @Id
-    @GeneratedValue
     @Column(columnDefinition = "UUID")
     private UUID id;
 
