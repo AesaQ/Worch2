@@ -19,8 +19,6 @@ import com.worch.model.entity.Vote;
 import com.worch.repository.ChoiceOptionRepository;
 import com.worch.repository.VoteRepository;
 import jakarta.persistence.EntityManager;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.*;
 import java.time.OffsetDateTime;

@@ -1,6 +1,5 @@
 package com.worch.controllers;
 
-import com.worch.controllers.docs.ChoiceControllerDocs;
 import com.worch.mapper.ChoiceMapper;
 import com.worch.model.dto.response.ChoiceDetailDto;
 import com.worch.model.dto.response.ChoiceResponseDto;
@@ -9,13 +8,9 @@ import com.worch.model.entity.Choice;
 import com.worch.service.ChoiceService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.worch.service.IdempotencyService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,20 +52,19 @@ public class ChoiceController {
 
     @PostMapping("/vote")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<String> vote(@RequestBody VoteRequest voteRequest,
-                                       @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
-        if(idempotencyKey == null) {
-            return ResponseEntity.ok(choiceService.vote(voteRequest));
+    public ResponseEntity<Void> vote(@RequestBody VoteRequest voteRequest,
+                                     @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+        if (idempotencyKey == null) {
+            choiceService.vote(voteRequest);
+            return ResponseEntity.ok().build();
         }
-        String response;
+
         String endpoint = httpServletRequest.getRequestURI();
-        String cachedResponse = idempotencyService.checkIdempotencyKey(idempotencyKey, endpoint);
-        if (cachedResponse != null) {
-            response = cachedResponse;
-        } else {
-            response = choiceService.vote(voteRequest);
-            idempotencyService.idempotencyKeyComplete(idempotencyKey, response);
+
+        if (idempotencyService.checkIdempotencyKey(idempotencyKey, endpoint)) {
+            choiceService.vote(voteRequest);
+            idempotencyService.idempotencyKeyComplete(idempotencyKey);
         }
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
     }
 }

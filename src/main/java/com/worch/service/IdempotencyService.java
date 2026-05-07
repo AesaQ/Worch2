@@ -25,7 +25,7 @@ public class IdempotencyService {
     private final EntityManager entityManager;
 
     @Transactional
-    public String checkIdempotencyKey(String idemKey, String endpoint) {
+    public boolean checkIdempotencyKey(String idemKey, String endpoint) {
         Optional<IdempotencyKey> idempotencyKeyOpt = idempotencyRepository.findByIdemKey(idemKey);
 
         //ключа не существует, создаём новый
@@ -40,7 +40,7 @@ public class IdempotencyService {
             newIdempotencyKey.setEndpoint(endpoint);
             newIdempotencyKey.setCreatedAt(OffsetDateTime.now());
             idempotencyRepository.save(newIdempotencyKey);
-            return null;
+            return true;
         }
 
         IdempotencyKey idempotencyKey = idempotencyKeyOpt.get();
@@ -52,6 +52,7 @@ public class IdempotencyService {
             if (idempotencyKey.getCreatedAt().isBefore(OffsetDateTime.now().minusSeconds(60))) {
                 idempotencyKey.setResponseStatus(IdempotencyStatus.FAILED);
                 idempotencyRepository.save(idempotencyKey);
+                throw new IdempotencyFailedException("Idempotency failed");
             }
 
             //встаём в ожидание
@@ -62,11 +63,11 @@ public class IdempotencyService {
                         .orElseThrow(() ->
                                 new EntityNotFoundException("IdempotencyKey был удалён во время ожидания"));
 
-                if (key.getResponseStatus().equals(IdempotencyStatus.COMPLETED)) {
-                    return key.getResponseBody();
+                if (IdempotencyStatus.COMPLETED.equals(key.getResponseStatus())) {
+                    return false;
                 }
 
-                if (key.getResponseStatus().equals(IdempotencyStatus.FAILED)) {
+                if (IdempotencyStatus.FAILED.equals(key.getResponseStatus())) {
                     throw new IdempotencyFailedException("Idempotency failed");
                 }
 
@@ -86,16 +87,15 @@ public class IdempotencyService {
             throw new IdempotencyFailedException("Idempotency failed");
         }
 
-        return idempotencyKey.getResponseBody();
+        return false;
     }
 
     @Transactional
-    public void idempotencyKeyComplete(String idemKey, String responseBody) {
+    public void idempotencyKeyComplete(String idemKey) {
         IdempotencyKey key = idempotencyRepository.findByIdemKey(idemKey)
                 .orElseThrow(() ->
                         new EntityNotFoundException("IdempotencyKey был удалён во время ожидания"));
         key.setResponseStatus(IdempotencyStatus.COMPLETED);
-        key.setResponseBody(responseBody);
         idempotencyRepository.save(key);
     }
 }
