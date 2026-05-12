@@ -43,6 +43,13 @@ services:
       - keycloak-network
       - worch-internal
 
+  redis:
+    image: redis:7.4-alpine
+    container_name: worch-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
 volumes:
   keycloak_data:
 
